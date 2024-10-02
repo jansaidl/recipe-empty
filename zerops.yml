@@ -1,0 +1,60 @@
+zerops:
+  - setup: golang0
+    build:
+      base: go@latest
+      buildCommands:
+        - go build -o main main.go
+      deployFiles: main
+    run:
+      base: alpine@3.20
+      ports:
+        - httpSupport: true
+          port: 8080
+        - httpSupport: true
+          port: 8081
+        - httpSupport: true
+          port: 8082
+      startCommands:
+        - command: ./main --port 8080
+        - command: ./main --port 8081
+        - command: ./main --port 8082
+
+#      start: zsc noop
+#      ports:
+#        - port: 1234
+#          httpSupport: true
+  - setup: app2
+    build:
+      deployFiles:
+        - README
+    run:
+      os: alpine
+      base: "3.20"
+  - setup: phpapache0
+    build:
+      base: php@8.3
+      buildCommands:
+        - echo "nothing to do"
+      deployFiles: index.php
+    run:
+      base: php-apache@8.3
+  - setup: bun0
+    build:
+      base: bun@1.1
+      buildCommands:
+        - bun i --production
+      deployFiles:
+        - ./
+    run:
+      base: bun@1.1
+      ports:
+        - port: 3002
+          httpSupport: true
+      start: NODE_ENV=production bun app.ts
+
+
+
+services:
+  - hostname: neco
+    type: alpine@3.20
+    startWithoutCode: true
